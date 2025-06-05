@@ -5,10 +5,28 @@ import type { Route } from './+types/dashboard';
 
 const { totalUsers, usersJoined, totalTrips, tripsCreated, userRole } = dashbaordStats;
 
-export const cliendLoader = async () => await getUser();
+export const clientLoader = async () => {
+  try {
+    const user = await getUser();
+    return { user }; // Always return an object with `user`
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    return { user: null }; // Explicitly return null
+  }
+};
 
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
   const user = loaderData.user as User | null;
+
+  // Redirect or show a loading state if user is null
+  if (!user) {
+    return (
+      <div className="grid place-items-center h-screen">
+        <p>Loading or not authenticated...</p>
+        {/* Or redirect: <Navigate to="/login" /> */}
+      </div>
+    );
+  }
 
   return (
     <main className="dashboard wrapper">
