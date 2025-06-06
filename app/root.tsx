@@ -5,10 +5,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "react-router";
-
+  redirect,
+} from "react-router"; // Add redirect import
 import type { Route } from "./+types/root";
 import "./app.css";
+import { account } from "~/appwrite/client"; // Import Appwrite client
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -26,6 +27,18 @@ export const links: Route.LinksFunction = () => [
 import { registerLicense } from "@syncfusion/ej2-base";
 
 registerLicense(import.meta.env.VITE_SYNCFUSION_LICENSE_KEY);
+
+export async function loader() {
+  try {
+    const user = await account.get();
+    if (user?.$id) {
+      return redirect("/dashboard");
+    }
+    return redirect("/sign-in");
+  } catch (error) {
+    return redirect("/sign-in");
+  }
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
