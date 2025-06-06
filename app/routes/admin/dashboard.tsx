@@ -17,7 +17,7 @@ import {ColumnDirective, ColumnsDirective, GridComponent} from "@syncfusion/ej2-
 
 export const clientLoader = async () => {
   const [
-    user,
+    userResponse,
     dashboardStats,
     trips,
     userGrowth,
@@ -31,6 +31,11 @@ export const clientLoader = async () => {
     await getTripsByTravelStyle(),
     await getAllUsers(4, 0),
   ])
+
+  const user = userResponse && typeof userResponse === 'object' &&
+               'name' in userResponse && 'email' in userResponse ?
+               userResponse : null;
+
   const allTrips = trips.allTrips.map(({ $id, tripDetails, imageUrls }) => ({
       id: $id,
       ...parseTripData(tripDetails),

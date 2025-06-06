@@ -21,10 +21,23 @@ export const storeUserData = async () => {
         const user = await account.get();
         if (!user) throw new Error("User not found");
 
-        const { providerAccessToken } = (await account.getSession("current")) || {};
-        const profilePicture = providerAccessToken
-            ? await getGooglePicture(providerAccessToken)
-            : null;
+        const session = await account.getSession("current");
+        const providerAccessToken = session?.providerAccessToken;
+
+        // Get Google picture with retry logic
+        let profilePicture = null;
+        if (providerAccessToken) {
+            try {
+                profilePicture = await getGooglePicture(providerAccessToken);
+                // If first attempt fails, wait and try again
+                if (!profilePicture) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    profilePicture = await getGooglePicture(providerAccessToken);
+                }
+            } catch (error) {
+                console.error("Error getting Google picture:", error);
+            }
+        }
 
         const createdUser = await database.createDocument(
             appwriteConfig.databaseId,
@@ -39,9 +52,10 @@ export const storeUserData = async () => {
             }
         );
 
-        if (!createdUser.$id) redirect("/sign-in");
+        return createdUser;
     } catch (error) {
         console.error("Error storing user data:", error);
+        throw error;
     }
 };
 
@@ -49,12 +63,17 @@ const getGooglePicture = async (accessToken: string) => {
     try {
         const response = await fetch(
             "https://people.googleapis.com/v1/people/me?personFields=photos",
-            { headers: { Authorization: `Bearer ${accessToken}` } }
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    Accept: "application/json"
+                }
+            }
         );
         if (!response.ok) throw new Error("Failed to fetch Google profile picture");
 
-        const { photos } = await response.json();
-        return photos?.[0]?.url || null;
+        const data = await response.json();
+        return data.photos?.[0]?.url || null;
     } catch (error) {
         console.error("Error fetching Google picture:", error);
         return null;
@@ -63,13 +82,42 @@ const getGooglePicture = async (accessToken: string) => {
 
 export const loginWithGoogle = async () => {
     try {
-        account.createOAuth2Session(
+        // Clear any existing sessions first
+        try {
+            await account.deleteSession("current");
+        } catch {}
+
+        await account.createOAuth2Session(
             OAuthProvider.Google,
-            `${window.location.origin}/`,
-            `${window.location.origin}/404`
+            `${window.location.origin}/dashboard`,  // Success URL
+            `${window.location.origin}/sign-in`     // Failure URL
         );
     } catch (error) {
-        console.error("Error during OAuth2 session creation:", error);
+        console.error("Google login failed:", error);
+        throw error;
+    }
+};
+
+export const verifySession = async () => {
+    try {
+        const session = await account.getSession('current');
+        if (!session) return null;
+
+        const user = await account.get();
+        if (!user) return null;
+
+        // Check if user exists in database, create if not
+        const existingUser = await getExistingUser(user.$id);
+        if (!existingUser) {
+            await storeUserData();
+            // Return fresh user data after creation
+            return await getExistingUser(user.$id);
+        }
+
+        return existingUser;
+    } catch (error) {
+        console.error("Session verification failed:", error);
+        return null;
     }
 };
 
@@ -77,28 +125,18 @@ export const logoutUser = async () => {
     try {
         await account.deleteSession("current");
     } catch (error) {
-        console.error("Error during logout:", error);
+        console.error("Logout failed:", error);
     }
 };
 
 export const getUser = async () => {
     try {
-        const user = await account.get();
+        const user = await verifySession(); // Use verifySession instead of direct account.get
         if (!user) return redirect("/sign-in");
-
-        const { documents } = await database.listDocuments(
-            appwriteConfig.databaseId,
-            appwriteConfig.userCollectionId,
-            [
-                Query.equal("accountId", user.$id),
-                Query.select(["name", "email", "imageUrl", "joinedAt", "accountId"]),
-            ]
-        );
-
-        return documents.length > 0 ? documents[0] : redirect("/sign-in");
+        return user;
     } catch (error) {
-        console.error("Error fetching user:", error);
-        return null;
+        console.error("Get user failed:", error);
+        return redirect("/sign-in");
     }
 };
 
@@ -108,12 +146,13 @@ export const getAllUsers = async (limit: number, offset: number) => {
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
             [Query.limit(limit), Query.offset(offset)]
-        )
+        );
 
         if(total === 0) return { users: [], total };
 
         return { users, total };
     } catch (e) {
-        return { users: [], total: 0 }
+        console.error("Get all users failed:", e);
+        return { users: [], total: 0 };
     }
-}
+};
