@@ -22,7 +22,6 @@ export const loader = async () => {
   // Try each API endpoint until one succeeds
   for (const endpoint of COUNTRY_API_ENDPOINTS) {
     try {
-      console.log(`[Countries] Fetching from ${endpoint}`);
       const response = await fetch(endpoint);
 
       if (!response.ok) {
@@ -52,7 +51,6 @@ export const loader = async () => {
         openStreetMap: country.maps?.openStreetMap || ''
       }));
 
-      console.log(`[Countries] Loaded ${processedData.length} countries`);
       return processedData;
 
     } catch (error) {
@@ -128,7 +126,6 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
         throw new Error("Please sign in to create trips");
       }
 
-      console.log("[Submit] Creating trip with:", formData);
       const response = await fetch("/api/create-trip", {
         method: "POST",
         headers: {
@@ -157,7 +154,6 @@ const CreateTrip = ({ loaderData }: Route.ComponentProps) => {
         throw new Error("Missing trip ID in response");
       }
 
-      console.log("[Submit] Trip created:", result.id);
       navigate(`/trips/${result.id}`);
 
     } catch (error) {
