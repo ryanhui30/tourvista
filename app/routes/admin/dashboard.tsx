@@ -3,7 +3,7 @@ import { getAllUsers, getUser } from '~/appwrite/auth';
 import type { Route } from './+types/dashboard';
 import { getTripsByTravelStyle, getUserGrowthPerDay, getUsersAndTripsStats } from '~/appwrite/dashboard';
 import { getAllTrips } from '~/appwrite/trips';
-import {parseTripData} from "~/lib/utils";
+import { parseTripData } from "~/lib/utils";
 import {
     Category,
     ChartComponent,
@@ -12,50 +12,61 @@ import {
     SplineAreaSeries,
     Tooltip
 } from "@syncfusion/ej2-react-charts";
-import {tripXAxis, tripyAxis, userXAxis, useryAxis} from "~/constants";
-import {ColumnDirective, ColumnsDirective, GridComponent} from "@syncfusion/ej2-react-grids";
+import { tripXAxis, tripyAxis, userXAxis, useryAxis } from "~/constants";
+import { ColumnDirective, ColumnsDirective, GridComponent } from "@syncfusion/ej2-react-grids";
+import { redirect } from "react-router";
 
 export const clientLoader = async () => {
-  const [
-    user,
-    dashboardStats,
-    trips,
-    userGrowth,
-    tripsByTravelStyle,
-    allUsers,
-  ] = await Promise.all([
-    await getUser(),
-    await getUsersAndTripsStats(),
-    await getAllTrips(4, 0),
-    await getUserGrowthPerDay(),
-    await getTripsByTravelStyle(),
-    await getAllUsers(4, 0),
-  ])
-  const allTrips = trips.allTrips.map(({ $id, tripDetails, imageUrls }) => ({
+  try {
+    // First verify authentication
+    const user = await getUser();
+    if (!user) {
+      return redirect("/sign-in");
+    }
+
+    // Then load dashboard data
+    const [
+      dashboardStats,
+      trips,
+      userGrowth,
+      tripsByTravelStyle,
+      allUsers,
+    ] = await Promise.all([
+      getUsersAndTripsStats(),
+      getAllTrips(4, 0),
+      getUserGrowthPerDay(),
+      getTripsByTravelStyle(),
+      getAllUsers(4, 0),
+    ]);
+
+    const allTrips = trips.allTrips.map(({ $id, tripDetails, imageUrls }) => ({
       id: $id,
       ...parseTripData(tripDetails),
       imageUrls: imageUrls ?? []
-  }))
+    }));
 
-  const mappedUsers: UsersItineraryCount[] = allUsers.users.map((user) => ({
+    const mappedUsers = allUsers.users.map((user) => ({
       imageUrl: user.imageUrl,
       name: user.name,
       count: user.itineraryCount ?? Math.floor(Math.random() * 10),
-  }))
+    }));
 
-  return {
-    user,
-    dashboardStats,
-    allTrips,
-    userGrowth,
-    tripsByTravelStyle,
-    allUsers: mappedUsers
+    return {
+      user,
+      dashboardStats,
+      allTrips,
+      userGrowth,
+      tripsByTravelStyle,
+      allUsers: mappedUsers
+    };
+  } catch (error) {
+    console.error("Dashboard loader error:", error);
+    return redirect("/sign-in");
   }
 };
 
 const Dashboard = ({ loaderData }: Route.ComponentProps) => {
-  const user = loaderData.user as User | null;
-  const { dashboardStats, allTrips, userGrowth, tripsByTravelStyle, allUsers } = loaderData;
+  const { user, dashboardStats, allTrips, userGrowth, tripsByTravelStyle, allUsers } = loaderData;
 
   const trips = allTrips.map((trip) => ({
         imageUrl: trip.imageUrls[0],
@@ -91,7 +102,7 @@ const Dashboard = ({ loaderData }: Route.ComponentProps) => {
   return (
     <main className="dashboard wrapper">
        <Header
-          title={`Welcome ${user?.name ?? 'Guest'} 👋`}
+          title={`Welcome ${'name' in user ? user.name : 'Guest'} 👋`}
           description="Track activity, trends and popular destinations in real time"
         />
 
