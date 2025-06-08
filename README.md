@@ -1,87 +1,102 @@
-# Welcome to React Router!
+# Tourvisto ✈️🌎  
+**AI-Powered Travel Agency Dashboard for Modern Travel Businesses**  
 
-A modern, production-ready template for building full-stack React applications using React Router.
+[Live Demo](https://tourvista-xi.vercel.app/sign-in) | [GitHub](https://github.com/ryanhui30/tourvista)  
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## ✨ Key Features  
+- **🤖 AI Trip Generation**  
+  Create customized travel itineraries instantly with Gemini AI integration  
+- **📊 Business Analytics Dashboard**  
+  Track user growth, trip trends, and booking statistics with Syncfusion charts
+- **👥 Customer Management**  
+  View and manage client profiles with booking history  
+- **🖼️ Visual Trip Builder**  
+  Browse and edit AI-generated trips with Unsplash image integration  
+- **🔐 Secure Authentication**  
+  Google Cloud authentication with Appwrite backend  
+- **📱 Fully Responsive**  
+  Works seamlessly on desktop, tablet, and mobile  
 
-## Features
+## 🛠️ Tech Stack  
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+### Core Platform  
+| Technology       | Use Case                     |
+|------------------|------------------------------|
+| React            | Frontend Framework           |
+| TypeScript       | Type-safe JavaScript         |
+| Appwrite         | Backend & Database           |
+| Google Cloud     | User Authentication          |
+| Gemini AI        | AI Trip Generation           |
 
-## Getting Started
+### UI & Data Visualization  
+| Component        | Technology                   |
+|------------------|------------------------------|
+| UI Components    | Syncfusion                   |
+| Styling          | Tailwind CSS                 |
+| Charts           | Syncfusion Charts            |
+| Image Provider   | Unsplash API                 |
 
-### Installation
+## 🚀 Getting Started  
 
-Install the dependencies:
+### Prerequisites  
+- Node.js v18+  
+- Appwrite Project ID  
+- Google OAuth Credentials  
+- Gemini API Key  
 
+### **Development Setup**  
+1. **Clone the repo**:  
+  ```bash
+  git clone https://github.com/ryanhui30/tourvista.git
+  cd tourvista
+  ```
+
+2. **Install dependencies**:
 ```bash
 npm install
 ```
 
-### Development
+3. **Configure environment variables**:
+- Create `.env.local` file:
+```
+bash
+# Appwrite
+VITE_APPWRITE_ENDPOINT=your_appwrite_endpoint
+VITE_APPWRITE_PROJECT_ID=your_project_id
 
-Start the development server with HMR:
+# Google Auth
+VITE_GOOGLE_CLIENT_ID=your_client_id
 
-```bash
+# Gemini AI
+VITE_GEMINI_API_KEY=your_api_key
+
+# Unsplash
+VITE_UNSPLASH_ACCESS_KEY=your_access_key
+```
+
+4. **Start Development Server**:
+```
+bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+## **🧭 How To Use**
+### **Generating Trips**
+- Navigate to Trip Generator
+- Click "Create New Trip" in the dashboard
+- Select Trip Preferences dropdown
+- Country/Region, travel style, interests, budget, etc.
 
-## Building for Production
+### **Generate & Customize**
+- Click "Generate with AI" to create itinerary
+- Edit trip details, images, and activities
+- Get destination climate details for all seaons beforehand
 
-Create a production build:
+### **Admin Dashboard Features**
+- Monitor user signups and trip bookings
+- View all customer profiles and trip history
+- Browse and edit all generated trips
+- Track user growth, trip trends, and active users on dynamic graphs
 
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+**📬 Need Help?**
+Contact: ryanhui30@gmail.com
